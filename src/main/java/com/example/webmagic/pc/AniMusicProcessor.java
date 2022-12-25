@@ -31,6 +31,7 @@ public class AniMusicProcessor implements PageProcessor{
 	@Override
 	public void process(Page page) {
 		//列表页
+		System.out.println(page.getUrl());
         if (page.getUrl().regex(URL_LIST).match()) {
         	List<String> l_post = page.getHtml().xpath("//div[@class=\"clear\"]").links().regex(URL_POST).all(); //目标详情
         	List<String> l_url = page.getHtml().links().regex(URL_LIST).all();	//所有的列表

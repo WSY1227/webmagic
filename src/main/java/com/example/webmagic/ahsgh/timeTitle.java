@@ -79,7 +79,7 @@ public class timeTitle implements PageProcessor {
         request.setRequestBody(HttpRequestBody.form(params, "UTF-8"));
         // 开始执行
         try {
-            us.codecraft.webmagic.Spider.create(new timeTitle()).addRequest(request).addPipeline(new MyPipeline()).thread(1).run();
+            Spider.create(new timeTitle()).addRequest(request).addPipeline(new MyPipeline()).thread(1).run();
         } catch (Exception e) {
             e.printStackTrace();
         }
