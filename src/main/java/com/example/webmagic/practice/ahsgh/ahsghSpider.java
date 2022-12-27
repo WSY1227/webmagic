@@ -1,5 +1,6 @@
-package com.example.webmagic.dao;
+package com.example.webmagic.practice.ahsgh;
 
+import com.example.webmagic.dao.XinXiDao;
 import com.example.webmagic.entity.XinXi;
 import com.example.webmagic.util.OracleUtils;
 import us.codecraft.webmagic.Page;
