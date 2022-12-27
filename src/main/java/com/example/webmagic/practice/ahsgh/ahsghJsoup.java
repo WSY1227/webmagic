@@ -147,10 +147,10 @@ public class ahsghJsoup implements PageProcessor {
     }
 
     public static void main(String[] args) {
-        ahsghSpider ahsghSpider = new ahsghSpider();
 
         //设置Post请求
-        Request request = ahsghSpider.getListRequest(1);
+        Request request = new ahsghJsoup().getListRequest(1);
+
         // 开始执行
         Spider.create(new ahsghJsoup())
                 .addRequest(request)
