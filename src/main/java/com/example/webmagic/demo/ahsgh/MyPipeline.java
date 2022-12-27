@@ -1,11 +1,10 @@
-package com.example.webmagic.ahsgh;
+package com.example.webmagic.demo.ahsgh;
 
 import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.pipeline.Pipeline;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MyPipeline implements Pipeline {
 

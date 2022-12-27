@@ -1,7 +1,5 @@
-package com.example.webmagic.ahsgh;
+package com.example.webmagic.demo.ahsgh;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicHeader;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Site;
@@ -10,7 +8,6 @@ import us.codecraft.webmagic.model.HttpRequestBody;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.utils.HttpConstant;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 

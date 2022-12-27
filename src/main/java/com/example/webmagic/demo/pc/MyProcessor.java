@@ -1,4 +1,4 @@
-package com.example.webmagic.pc;
+package com.example.webmagic.demo.pc;
 
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;

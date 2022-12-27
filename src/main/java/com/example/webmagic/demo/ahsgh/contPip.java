@@ -1,4 +1,4 @@
-package com.example.webmagic.ahsgh;
+package com.example.webmagic.demo.ahsgh;
 
 import us.codecraft.webmagic.ResultItems;
 import us.codecraft.webmagic.Task;

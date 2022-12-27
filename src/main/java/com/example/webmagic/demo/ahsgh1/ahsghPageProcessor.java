@@ -1,18 +1,11 @@
-package com.example.webmagic.baidu;
+package com.example.webmagic.demo.ahsgh1;
 
-import org.apache.logging.log4j.message.Message;
 import us.codecraft.webmagic.Page;
-import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Site;
-import us.codecraft.webmagic.model.HttpRequestBody;
 import us.codecraft.webmagic.processor.PageProcessor;
-import us.codecraft.webmagic.selector.Html;
-import us.codecraft.webmagic.utils.HttpConstant;
 
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @ClassName: ahsghPageProcessor
@@ -37,28 +30,38 @@ public class ahsghPageProcessor implements PageProcessor {
                 //添加内容页
                 page.addTargetRequest(url);
             });
+//            String s = page.getHtml().xpath("//div[@class='sunui-sunpage']/a/@href").regex("gotoPage\\(\\d+\\)").all().get(0);
+//            String s = page.getHtml().xpath("//div[@class='sunui-sunpage']/a/@href").regex("gotoPage\\(\\d+\\)").all().get(0);
+//            System.out.println("下一页："+s);
             if (PageCount == 0) {
                 //开始获取翻页链接
                 ahsghSpider ahsghSpider = new ahsghSpider();
                 PageCount = Integer.parseInt(page.getHtml().$(".pagenub", "text").all().get(1).substring(3));
                 for (int i = 2; i <= 3; i++) {
                     //包装每页的链接并放入请求队列
-                    page.addTargetRequest(ahsghSpider.getNextPageRequest(i));
+                    page.addTargetRequest(ahsghSpider.getListRequest(i));
                 }
             }
+            //列表界面跳过Pipeline
+            page.setSkip(true);
         } else {
             //解析内容详情
             String title = page.getHtml().$(".article-conca.clearfix h2", "text").toString();
             String time = page.getHtml().$(".article-information span", "text").regex("\\d{4}-\\d{2}-\\d{2}").toString();
-            System.out.println("标题：" + title);
-            System.out.println("时间：" + time);
             String context = page.getHtml().$(".article-conca.clearfix").toString();
-            System.out.println(context);
+            int startIndex = context.indexOf("<!-- 正文内容 -->");
+            int endIndex = context.indexOf("<!-- 文后 -->");
+            page.putField("title", title);
+            page.putField("time", time);
+            if (startIndex != -1 && endIndex != -1) {
+                String contentHtml = context.substring(startIndex + "<!-- 正文内容 -->".length(), endIndex);
+                page.putField("contentHtml", contentHtml);
+            }
         }
 
     }
 
-    private Site site = Site.me();
+    private Site site = Site.me().setRetryTimes(3).setSleepTime(1000);
 
     @Override
     public Site getSite() {

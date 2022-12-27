@@ -1,4 +1,4 @@
-package com.example.webmagic.pc;
+package com.example.webmagic.demo.pc;
  
 import java.util.List;
  

@@ -1,4 +1,4 @@
-package com.example.webmagic.ahsgh;
+package com.example.webmagic.demo.ahsgh;
 
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;
