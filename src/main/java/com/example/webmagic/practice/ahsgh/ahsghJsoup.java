@@ -130,6 +130,7 @@ public class ahsghJsoup implements PageProcessor {
                     String context = element.outerHtml();
                     xinXi.setDETAIL_TITLE(element.select("h2").text());
                     xinXi.setDETAIL_CONTENT(ReUtil.get("<p></p>([\\s\\S]*?)<p></p>", context, 1));
+                    xinXi.setSOURCE_NAME("安徽省港航集团有限公司");
                     xinXiDao.saveXinxi(xinXi);
                 } else {
                     System.out.println("未获能正确获取正文内容");

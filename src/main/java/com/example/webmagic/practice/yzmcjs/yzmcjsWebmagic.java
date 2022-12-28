@@ -1,7 +1,10 @@
 package com.example.webmagic.practice.yzmcjs;
 
 import cn.hutool.core.util.ReUtil;
+import com.example.webmagic.dao.XinXiDao;
+import com.example.webmagic.entity.XinXi;
 import com.example.webmagic.practice.ahsgh.ahsghSpider;
+import com.example.webmagic.util.OracleUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -33,6 +36,9 @@ public class yzmcjsWebmagic implements PageProcessor {
     private int maxNum = 1;
     //当前页
     private int nowNum = 1;
+    XinXiDao xinXiDao = new XinXiDao();
+    public Map<String, XinXi> map = new HashMap<>();
+
     @Override
     public void process(Page page) {
         Document document = page.getHtml().getDocument();
@@ -40,39 +46,68 @@ public class yzmcjsWebmagic implements PageProcessor {
         if (pageUrl.equals(ListUrl)) {
             Elements aList = document.select(".lmy_info_list a");
             for (Element a : aList) {
-                String detailLink = detailLinkTemplate + ReUtil.get("id=(\\d+)", a.attr("href"), 1);
-                System.out.println(detailLink);
+                String id = ReUtil.get("id=(\\d+)", a.attr("href"), 1);
+                //存入数据库的id拼接一下避免冲突
+                String yzmcjsId = "yzmcjs=" + id;
+                if (OracleUtils.existsById(yzmcjsId, "XIN_XI_INFO_TEST")) {
+                    System.out.println("已存在");
+                    continue;
+                }
+                //拼接生成详情链接
+                String detailLink = detailLinkTemplate + id;
+                //获取列表标题
                 String listTitle = a.select(".title").text();
-                System.out.println(listTitle);
-                String pageTime = a.select(".time").text();
-                System.out.println(pageTime);
+                //获取对应时间
+                String pageTime = a.select(".time").text().replaceAll("/","-");
+
+                XinXi xinXi = new XinXi();
+                xinXi.setID(yzmcjsId);
+                xinXi.setDETAIL_LINK(detailLink);
+                xinXi.setLIST_TITLE(listTitle);
+                xinXi.setPAGE_TIME(pageTime);
+                map.put(detailLink, xinXi);
                 page.addTargetRequest(detailLink);
             }
-        }else {
-            Elements content = document.select(".page-con");
-            String detailTitle=content.select(".wzy_t1").text();
-            Elements context = content.select(".wzy_bd");
-            Elements aList = context.select("a");
-            for (Element a : aList) {
-                String href = a.attr("href");
-                if (href.startsWith("/")) {
-                    href = "http://www.yzmcjs.com" + href;
-                    a.attr("href", href);
+            if (nowNum == 1) {
+                String href = document.select("a:contains(尾页)").first().attr("href");
+                maxNum = Integer.parseInt(ReUtil.get("'(\\d+)'", href, 1));
+                System.out.println(maxNum);
+            }
+            if (nowNum <= maxNum) {
+                nowNum++;
+                Request request = getListRequest(nowNum);
+                page.addTargetRequest(request);
+            }
+        } else {
+            XinXi xinXi = map.get(pageUrl);
+            if (xinXi != null) {
+                Elements content = document.select(".page-con");
+                if (content != null) {
+                    //详情标题
+                    String detailTitle = content.select(".wzy_t1").text();
+                    System.out.println("详情标题" + detailTitle);
+                    //详情内容
+                    Elements context = content.select(".wzy_bd");
+                    Elements contentAList = context.select("a");
+                    //补全a标签
+                    for (Element a : contentAList) {
+                        String href = a.attr("href");
+                        if (href.startsWith("/")) {
+                            href = "http://www.yzmcjs.com" + href;
+                            a.attr("href", href);
+                        }
+                    }
+                    //详情html
+                    String detailContent = context.outerHtml();
+                    xinXi.setDETAIL_TITLE(detailTitle);
+                    xinXi.setDETAIL_CONTENT(detailContent);
+                    xinXi.setSOURCE_NAME("扬州市名城建设有限公司");
+                    xinXiDao.saveXinxi(xinXi);
+                } else {
+                    System.out.println("未获能正确获取正文内容");
                 }
             }
-            String detailContent =context.outerHtml();
-            System.out.println(detailContent);
         }
-        if (nowNum == 1) {
-            String href = document.select("a:contains(尾页)").first().attr("href");
-            maxNum = Integer.parseInt(ReUtil.get("'(\\d+)'", href, 1));
-            System.out.println(maxNum);
-        }
-        if (nowNum < maxNum) {
-            nowNum++;
-            page.addTargetRequest(getListRequest(nowNum));
-        }
-
     }
 
     @Override
@@ -99,7 +134,8 @@ public class yzmcjsWebmagic implements PageProcessor {
         request.addHeader("Content-Type", "application/x-www-form-urlencoded");
         //将键值对数组添加到map中
         Map<String, Object> params = new HashMap<>();
-        params.put("__EVENTTARGET", "ContentPlaceHolder1");
+        params.put("__VIEWSTATEGENERATOR", "CA8C29DA");
+        params.put("__EVENTTARGET", "ctl00$ContentPlaceHolder1$AspNetPager1");
         params.put("__EVENTARGUMENT", pageNumber + "");
         //设置request参数
         request.setRequestBody(HttpRequestBody.form(params, "UTF-8"));

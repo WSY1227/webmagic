@@ -99,6 +99,7 @@ public class ashghHttpClient {
                 //封装内容
                 xinXi.setDETAIL_CONTENT(ReUtil.get("<p></p>([\\s\\S]*?)<p></p>", context.outerHtml(), 1));
                 xinXi.setDETAIL_TITLE(context.select("h2").first().text());
+                xinXi.setSOURCE_NAME("安徽省港航集团有限公司");
                 //保存数据库
                 new XinXiDao().saveXinxi(xinXi);
             } else {

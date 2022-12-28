@@ -1,6 +1,5 @@
 package com.example.webmagic.entity;
 
-import oracle.sql.CLOB;
 
 import java.util.Date;
 

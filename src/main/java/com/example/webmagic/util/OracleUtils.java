@@ -1,5 +1,7 @@
 package com.example.webmagic.util;
 
+import com.sun.istack.internal.logging.Logger;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.*;
@@ -7,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OracleUtils {
+    private static final Logger logger = Logger.getLogger(OracleUtils.class);
     // 定义数据库连接字符串
     private static final String URL = "jdbc:oracle:thin:@192.168.2.42:1521:orcl";
     private static final String USERNAME = "bxkc";
@@ -33,6 +36,8 @@ public class OracleUtils {
 
     // 使用Prepared Statement执行带有参数的SQL语句
     public static int executeUpdate(String sql, Object... params) throws SQLException {
+        logger.info("开始更新数据库");
+
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -41,7 +46,13 @@ public class OracleUtils {
             for (int i = 0; i < params.length; i++) {
                 statement.setObject(i + 1, params[i]);
             }
-            return statement.executeUpdate();
+            int updateNum = statement.executeUpdate();
+            logger.info("更新结束共计更新" + updateNum + "条数据");
+            return updateNum;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.info("数据库更新异常");
+            return 0;
         } finally {
             close(connection, statement, null);
         }
@@ -144,7 +155,7 @@ public class OracleUtils {
 
         } catch (SQLException | ReflectiveOperationException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             close(connection, statement, resultSet);
         }
         return results;

@@ -101,6 +101,7 @@ public class ahsghSpider implements PageProcessor {
             xinXi.setDETAIL_TITLE(title);
             xinXi.setDETAIL_CONTENT(contentHtml);
             xinXi.setPAGE_TIME(time);
+            xinXi.setSOURCE_NAME("安徽省港航集团有限公司");
             xinXiDao.saveXinxi(xinXi);
         }
 

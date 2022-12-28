@@ -12,7 +12,7 @@ public class XinXiDao {
     public void saveXinxi(XinXi xinXi) {
         String sql = "INSERT INTO XIN_XI_INFO_TEST(ID, SOURCE_NAME, DETAIL_LINK, DETAIL_TITLE, DETAIL_CONTENT, PAGE_TIME, CREATE_TIME, LIST_TITLE, CREATE_BY) VALUES (?, ?, ?, ?, ?, ?, ?, ? ,?)";
         try {
-            OracleUtils.executeUpdate(sql, xinXi.getID(), "安徽省港航集团有限公司",
+            OracleUtils.executeUpdate(sql, xinXi.getID(), xinXi.getSOURCE_NAME(),
                     xinXi.getDETAIL_LINK(),
                     xinXi.getDETAIL_TITLE(),
                     xinXi.getDETAIL_CONTENT(),
