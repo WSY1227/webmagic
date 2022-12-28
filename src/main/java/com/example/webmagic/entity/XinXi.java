@@ -30,7 +30,7 @@ public class XinXi {
     private String DETAIL_CONTENT;
 
     /**
-     * 列表标题
+     * 详情时间
      */
     private String PAGE_TIME;
 
