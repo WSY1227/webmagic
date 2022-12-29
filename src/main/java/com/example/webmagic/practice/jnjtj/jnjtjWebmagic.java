@@ -22,7 +22,6 @@ import us.codecraft.webmagic.utils.HttpConstant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class jnjtjWebmagic implements PageProcessor {
     String domain = "http://jnjtj.jinan.gov.cn";
@@ -44,20 +43,17 @@ public class jnjtjWebmagic implements PageProcessor {
 
     @Override
     public void process(Page page) {
-        Document document = page.getHtml().getDocument();
+        Document document = Jsoup.parse(page.toString().replace("<![CDATA[", "<table>").replace("]]>", "</table>"));
         String pageUrl = page.getUrl().toString();
         if (pageUrl.startsWith("http://jnjtj.jinan.gov.cn/module/web/jpage/dataproxy.jsp")) {
             Elements records = document.select("record");
             if (records != null) {
                 for (Element record : records) {
-                    //获取CDATA中的内容
-                    String data = record.data();
-                    //获取每个td
-                    List<String> listDate = ReUtil.findAll("<td(.*?)>(.*?)</td>", data, 2);
+                    Elements listDate = record.select("td");
                     //获取列表的a标签
-                    String listA = listDate.get(1);
+                    Elements listA = listDate.get(1).select("a");
                     //获取a的href属性值
-                    String aHref = ReUtil.get("href=\"(.*?)\"", listA, 1);
+                    String aHref = listA.attr("href");
                     //将href处理一下可以当唯一ID
                     String id = ReUtil.get("_(\\d+)\\.", aHref, 1);
                     //如果已存在就跳过
@@ -66,13 +62,14 @@ public class jnjtjWebmagic implements PageProcessor {
                         continue;
                     }
                     //获取a标签的标题
-                    String listTitle = ReUtil.get("<a(.*?)>(.*?)</a>", listA, 2);
+                    String listTitle = listA.text();
                     //补充完整链接
                     String detailLink = domain + aHref;
                     //获取详情的时间并清理空格
-                    String pageTime = listDate.get(2).trim();
+                    String pageTime = listDate.get(2).text().trim();
                     XinXi xinXi = new XinXi();
                     xinXi.setID(id);
+                    xinXi.setPAGE_TIME(pageTime);
                     xinXi.setPAGE_TIME(pageTime);
                     xinXi.setLIST_TITLE(listTitle);
                     xinXi.setSOURCE_NAME("济南市城乡交通运输局");
@@ -83,11 +80,11 @@ public class jnjtjWebmagic implements PageProcessor {
                 if (nowPage == 1) {
                     //更新总条目
                     countRecord = Integer.parseInt(document.select("totalrecord").text());
-                    //每页展示量
-                    int dataCount = perPage * 3;
+                    //界面页数
+                    int totalPage = Integer.parseInt(document.select("totalpage").text());
                     //获得实际页数
-                    countPage = countRecord / dataCount;
-                    if (countRecord % dataCount != 0) {
+                    countPage = totalPage / 3;
+                    if (countRecord % totalPage != 0) {
                         countPage++;
                     }
                 }
@@ -107,8 +104,16 @@ public class jnjtjWebmagic implements PageProcessor {
                 if (xinXi != null) {
                     //获取内容时间
                     String detailTitle = context.select(".sp_title").text();
+                    //补全iframes的src
+                    Elements iframes = context.select("iframe");
+                    iframes.forEach(iframe -> {
+                        String iframeSrc = domain + iframe.attr("src");
+                        iframe.attr("src", iframeSrc);
+                    });
                     //获取详细内容html
-                    String detailContent = context.select("#zoom").outerHtml();
+                    Elements elements = context.select("#zoom");
+                    String detailContent = elements.outerHtml();
+
                     xinXi.setDETAIL_TITLE(detailTitle);
                     xinXi.setDETAIL_CONTENT(detailContent);
                     xinXiDao.saveXinxi(xinXi);
