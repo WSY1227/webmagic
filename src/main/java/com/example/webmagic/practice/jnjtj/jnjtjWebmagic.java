@@ -4,6 +4,7 @@ import cn.hutool.core.util.ReUtil;
 import com.example.webmagic.dao.XinXiDao;
 import com.example.webmagic.entity.XinXi;
 import com.example.webmagic.practice.yzmcjs.yzmcjsWebmagic;
+import com.example.webmagic.util.CompleteAllLabel;
 import com.example.webmagic.util.OracleUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -110,6 +111,9 @@ public class jnjtjWebmagic implements PageProcessor {
                         String iframeSrc = domain + iframe.attr("src");
                         iframe.attr("src", iframeSrc);
                     });
+                    //补全标签
+                    CompleteAllLabel.complete(context, domain);
+
                     //获取详细内容html
                     Elements elements = context.select("#zoom");
                     String detailContent = elements.outerHtml();
