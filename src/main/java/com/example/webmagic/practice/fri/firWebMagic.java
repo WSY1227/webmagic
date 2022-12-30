@@ -47,10 +47,10 @@ public class firWebMagic implements PageProcessor {
                     //获取列表标题
                     String listTitle = h5.text();
                     System.out.println("listTitle:" + listTitle);
-                    String onclickId = ReUtil.get("\\d", h5.attr("onclick"), 0);
+                    String onclickId = ReUtil.get("\\d+", h5.attr("onclick"), 0);
                     //存入数据库的id
                     String id = "fri=" + onclickId;
-                    System.out.println("id:" + onclickId);
+                    System.out.println("id:" + id);
                     //拼接链接
                     String detailLink = detailLinkTemplate + onclickId;
                     System.out.println("detailLink:" + detailLink);
@@ -67,7 +67,7 @@ public class firWebMagic implements PageProcessor {
                     String viewStateGenerator = document.select("#__VIEWSTATEGENERATOR").attr("value");
                     String eventValidation = document.select("#__EVENTVALIDATION").attr("value");
                     String hid_idd = document.select("#ContentPlaceHolder1_hid_idd").attr("value");
-                    Request request = getListRequest(nowNum, viewState, hid_idd, eventValidation, viewStateGenerator);
+                    Request request = getListRequest(nowNum - 1, viewState, hid_idd, eventValidation, viewStateGenerator);
                     page.addTargetRequest(request);
                 }
             } else {
@@ -77,19 +77,23 @@ public class firWebMagic implements PageProcessor {
             Elements context = document.select("#detailsContent");
             if (context != null) {
                 //补全标签
-                CompleteAllLabel.complete(context, domain);
+//                CompleteAllLabel.complete(context, domain);
+                CompleteAllLabel.complete(context, domain, "ueditors", "\"^.*(?=/Uploads)\"");
+                CompleteAllLabel.complete(context, domain, "ueditor", "\"^.*(?=/Uploads)\"");
                 //获取详情标题
                 Elements titleLabel = context.select(".details-title");
                 String detailTitle = titleLabel.text();
                 //获取详情时间
-                Elements timeLabel = context.select(".details-desc.text-right>span");
+                Elements detailsDesc = context.select(".details-desc.text-right");
+                Elements timeLabel = detailsDesc.select("span");
                 String timeText = timeLabel.text();
-                String time = ReUtil.get("\\d+/\\d+/\\d+?", timeText, 1);
+                String time = ReUtil.get("\\d{4}/\\d{2}/\\d{2}", timeText, 1);
 
                 titleLabel.remove();
-                timeLabel.remove();
+                detailsDesc.remove();
+                context.select(".details-line").remove();
 
-                System.out.println(time);
+                System.out.println(context);
 
             }
         }
@@ -120,7 +124,7 @@ public class firWebMagic implements PageProcessor {
         request.addHeader("Content-Type", "application/x-www-form-urlencoded");
         //将键值对数组添加到map中
         Map<String, Object> params = new HashMap<>();
-        params.put("__EVENTTARGET", "ctl00$ContentPlaceHolder1$btnpagetz");
+        params.put("__EVENTTARGET", "ctl00$ContentPlaceHolder1$nextpage");
         params.put("__EVENTARGUMENT", "");
         params.put("__VIEWSTATE", viewState);
         params.put("__VIEWSTATEGENERATOR", viewStateGenerator);

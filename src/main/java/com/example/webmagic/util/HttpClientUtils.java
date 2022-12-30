@@ -50,18 +50,18 @@ public class HttpClientUtils {
      * 设置定时任务清理连接
      */
     private static final ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(2);
+
     static {
         init();
         destroyByJvmExit();
     }
+
     private static void destroyByJvmExit() {
-        Thread hook = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    httpclient.close();
-                } catch (IOException e) {
-                    //
-                }
+        Thread hook = new Thread(() -> {
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+                //
             }
         });
         Runtime.getRuntime().addShutdownHook(hook);
@@ -94,7 +94,7 @@ public class HttpClientUtils {
      * @Description: TODO(发送post请求)
      */
     public static String sendPost(String url, Map<String, String> headers, ArrayList<NameValuePair> data, String encoding) {
-    	log.info("进入post请求方法..."+encoding);
+        log.info("进入post请求方法..." + encoding);
         log.info("请求入参：headers=" + JSON.toJSONString(headers));
         log.info("请求入参：URL= " + url);
         log.info("请求入参：data=" + JSON.toJSONString(data));
@@ -116,12 +116,11 @@ public class HttpClientUtils {
                 httpPost.setHeaders(allHeader);
             }
             // 设置实体
-//            httpPost.setEntity(new StringEntity(JSON.toJSONString(data),encoding));
-            UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(data);
+            UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(data, "UTF-8");
             httpPost.setEntity(formEntity);
             // 发送请求,返回响应对象
             CloseableHttpResponse response = client.execute(httpPost);
-            return parseData(response);
+            return parseData(response, encoding);
 
         } catch (Exception e) {
             log.error("发送post请求失败", e);
@@ -147,23 +146,6 @@ public class HttpClientUtils {
         return sendPost(url, headers, data, encoding);
     }
 
-//    /**
-//     * @param url    请求地址
-//     * @param params 请求实体
-//     * @return String
-//     * @throws
-//     * @Title: sendPost
-//     * @Description: TODO(发送post请求 ， 请求数据默认使用json格式 ， 默认使用UTF - 8编码)
-//     */
-//    public static String sendPost(String url, Map<String, Object> params) {
-//        // 设置默认请求头
-//        Map<String, String> headers = new HashMap<>();
-//        headers.put("content-type", "application/json");
-//        // 将map转成json
-//        JSONObject data = JSONObject.parseObject(JSON.toJSONString(params));
-//        return sendPost(url, headers, data, encoding);
-//    }
-
     /**
      * @param url     请求地址
      * @param headers 请求头
@@ -176,21 +158,6 @@ public class HttpClientUtils {
     public static String sendPost(String url, Map<String, String> headers, ArrayList<NameValuePair> data) {
         return sendPost(url, headers, data, encoding);
     }
-
-//    /**
-//     * @param url     请求地址
-//     * @param headers 请求头
-//     * @param params  请求实体
-//     * @return String
-//     * @throws
-//     * @Title: sendPost
-//     * @Description:(发送post请求，请求数据默认使用UTF-8编码)
-//     */
-//    public static String sendPost(String url, Map<String, String> headers, Map<String, String> params) {
-//        // 将map转成json
-//        JSONObject data = JSONObject.parseObject(JSON.toJSONString(params));
-//        return sendPost(url, headers, data, encoding);
-//    }
 
     /**
      * @param url      请求地址
@@ -209,6 +176,7 @@ public class HttpClientUtils {
         CloseableHttpClient client = HttpClients.createDefault();
         // 创建HttpGet
         HttpGet httpGet = new HttpGet();
+        httpGet.addHeader("Accept-Charset", "utf-8");
         try {
             // 创建uri
             URIBuilder builder = new URIBuilder(url);
@@ -224,7 +192,7 @@ public class HttpClientUtils {
             httpGet.setURI(uri);
             // 发送请求，返回响应对象
             CloseableHttpResponse response = client.execute(httpGet);
-            return parseData(response);
+            return parseData(response, encoding);
         } catch (Exception e) {
             log.error("发送get请求失败", e);
             System.out.println(1);
@@ -264,43 +232,20 @@ public class HttpClientUtils {
      * @return
      * @throws Exception
      */
-    public static String parseData(CloseableHttpResponse response) throws Exception {
+    public static String parseData(CloseableHttpResponse response, String encoding) throws Exception {
         // 获取响应状态
         int status = response.getStatusLine().getStatusCode();
         if (status == HttpStatus.SC_OK) {
             // 获取响应数据
-            return EntityUtils.toString(response.getEntity(), encoding);
+            if (encoding != null) {
+                return EntityUtils.toString(response.getEntity(), encoding);
+            } else {
+                return EntityUtils.toString(response.getEntity());
+            }
         } else {
             log.error("响应失败，状态码：" + status);
         }
         System.out.println("no");
         return null;
-    }
-    
-    /**
-     * 发送Post请求
-     * @param url
-     * @param params
-     * @return
-     */
-    public static String postWithParamsForString(String url, List<NameValuePair> params) {
-    	// 创建Client
-        CloseableHttpClient client = HttpClients.createDefault();
-        // 创建HttpPost对象
-        HttpPost httpPost = new HttpPost();
-        
-        try {
-        	// 设置请求地址
-            httpPost.setURI(new URI(url));
-        	httpPost.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
-            httpPost.setHeader("Content-type", "application/x-www-form-urlencoded"); 
-            CloseableHttpResponse response = client.execute(httpPost);
-			return parseData(response);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			httpPost.releaseConnection();
-		}
-    	return null;
     }
 }
