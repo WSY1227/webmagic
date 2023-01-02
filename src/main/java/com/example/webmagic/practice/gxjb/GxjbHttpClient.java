@@ -4,7 +4,7 @@ import cn.hutool.core.util.ReUtil;
 import com.example.webmagic.dao.XinXiDao;
 import com.example.webmagic.entity.XinXi;
 import com.example.webmagic.util.CompleteAllLabel;
-import com.example.webmagic.util.HttpClientUtils;
+import com.example.webmagic.util.up.HttpClientUtils;
 import com.example.webmagic.util.OracleUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicHeader;
@@ -35,7 +35,7 @@ public class GxjbHttpClient {
     public void listPage(int pageNumber, String viewState, String viewStateGenerator, String eventValidation) {
         Document document;
         if (pageNumber == 1) {
-            document = Jsoup.parse(HttpClientUtils.sendGet(listUrl, null, "GBK"));
+            document = Jsoup.parse(HttpClientUtils.doGet(listUrl, null, "GBK"));
             //获取总页数
             maxNum = Integer.parseInt(document.select("#grdNews_Lbl共几页").text());
         } else {
@@ -55,7 +55,7 @@ public class GxjbHttpClient {
             data.add(new BasicHeader("__VIEWSTATEENCRYPTED", ""));
             data.add(new BasicHeader("__EVENTVALIDATION", eventValidation));
             //发送请求
-            String content = HttpClientUtils.sendPost(listUrl, headers, data, "GBK");
+            String content = HttpClientUtils.doPost(listUrl, headers, data, "GBK");
             document = Jsoup.parse(content);
         }
 
@@ -85,7 +85,7 @@ public class GxjbHttpClient {
                     xinXi.setLIST_TITLE(listTitle);
                     xinXi.setDETAIL_LINK(detailLink);
                     xinXi.setPAGE_TIME(pageTime);
-                    Elements context = Jsoup.parse(HttpClientUtils.sendGet(detailLink, null, "GBK")).select(".neiyeconbox_R_con");
+                    Elements context = Jsoup.parse(HttpClientUtils.doGet(detailLink, null, "GBK")).select(".neiyeconbox_R_con");
                     if (context != null) {
                         //详情标题
                         Elements detailTitleLabel = context.select(".neiyeconbox_R_con_tit");
